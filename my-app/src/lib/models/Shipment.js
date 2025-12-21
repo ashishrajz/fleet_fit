@@ -14,7 +14,7 @@ const ShipmentSchema = new mongoose.Schema(
 
     source: String,
     destination: String,
-
+    pickup: Date,
     deadline: Date,
 
     status: {

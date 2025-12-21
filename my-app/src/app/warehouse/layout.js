@@ -27,7 +27,7 @@ export default async function WarehouseLayout({ children }) {
         navItems={warehouseNav}
         profileLink="/warehouse/profile"
       />
-      <main className="ml-20 w-full">{children}</main>
+      <main className="ml-64 w-full min-h-screen transition-all duration-300">{children}</main>
     </div>
   );
 }

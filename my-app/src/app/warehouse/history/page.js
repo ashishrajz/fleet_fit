@@ -1,6 +1,6 @@
 import React from 'react'
 
-const FullScreenLoader = () => {
+const page = () => {
   return (
     <div>
       
@@ -8,4 +8,4 @@ const FullScreenLoader = () => {
   )
 }
 
-export default FullScreenLoader
+export default page

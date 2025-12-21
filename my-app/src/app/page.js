@@ -1,4 +1,4 @@
-// app/page.js
+'use client'
 import Image from "next/image";
 import {
   FaTruckMoving,
@@ -8,8 +8,9 @@ import {
   FaUpload,
   FaCogs,
   FaCheckCircle,
-  FaWarehouse,
 } from "react-icons/fa";
+
+import { useRouter } from "next/navigation";
 
 // Brand Colors
 const primary = "text-[#EA2831]";
@@ -17,7 +18,11 @@ const primaryBg = "bg-[#EA2831]";
 const primaryGradient = "bg-gradient-to-r from-[#EA2831] to-[#D41F26]";
 const subtleRedBg = "bg-[#FFF5F5]";
 
+
 export default function Home() {
+
+  const router=useRouter()
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-[#EA2831] selection:text-white overflow-x-hidden">
       {/* NAVBAR */}
@@ -39,7 +44,7 @@ export default function Home() {
             <a href="#dealers" className="hover:text-[#EA2831] transition-colors">
               For Dealers
             </a>
-            <button className={`${primaryGradient} rounded-full px-6 py-2.5 text-white shadow-md hover:shadow-lg hover:shadow-red-500/20 hover:-translate-y-0.5 transition-all duration-300`}>
+            <button className={`${primaryGradient} rounded-full px-6 py-2.5 text-white shadow-md hover:shadow-lg hover:shadow-red-500/20 hover:-translate-y-0.5 transition-all duration-300`} onClick={()=>router.push('/login')}>
               Sign In
             </button>
           </div>
@@ -48,7 +53,7 @@ export default function Home() {
 
       {/* HERO SECTION */}
       <main className="relative mx-auto flex w-fullflex-col items-center gap-12 px-6 pt-32 pb-20 lg:flex-row lg:pt-40 lg:pb-32">
-        {/* Background Decorative Blob */}
+        {/* Background Decorative */}
         <div className="absolute top-0 right-0 -z-10 h-[600px] w-[600px] translate-x-1/3 -translate-y-1/4 rounded-full bg-gradient-to-br from-red-50 via-orange-50 to-transparent opacity-70 blur-3xl" />
 
         <div className="flex-1 space-y-8">
@@ -64,7 +69,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <button className={`${primaryGradient} group flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}>
+            <button className={`${primaryGradient} group flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor:pointer`} onClick={()=>router.push('/signin')}>
              Get Started
               <FaRoute className="opacity-70 group-hover:translate-x-1 transition-transform" />
             </button>
