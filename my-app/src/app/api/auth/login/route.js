@@ -71,7 +71,7 @@ export async function POST(req) {
    
     res.headers.set("Set-Cookie", cookie);
     
-    console.log("LOGIN SUCCESS:", { userId: user._id, role: user.role });
+    
     return res;
 
   } catch (err) {

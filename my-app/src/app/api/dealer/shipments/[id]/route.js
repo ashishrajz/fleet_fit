@@ -68,11 +68,7 @@ export async function GET(req, context) {
     }
 
     // 🔍 DEBUG (leave this for now)
-    console.log("DEALER SHIPMENT API:");
-    console.log("Booking ID:", booking._id);
-    console.log("Booking status:", booking.status);
-    console.log("Booking finalPrice:", booking.finalPrice);
-    console.log("Booking keys:", Object.keys(booking.toObject()));
+    
 
     return NextResponse.json({
       shipment: booking.shipment,

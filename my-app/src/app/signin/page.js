@@ -43,6 +43,17 @@ const Page = () => {
 
   return (
     <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100 font-sans">
+      {loading && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="bg-white rounded-2xl px-8 py-6 shadow-xl flex flex-col items-center gap-4">
+      <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-sm font-semibold text-slate-700">
+        Creating your account…
+      </p>
+    </div>
+  </div>
+)}
+
       
       {/* LEFT */}
       <div className="relative w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10">

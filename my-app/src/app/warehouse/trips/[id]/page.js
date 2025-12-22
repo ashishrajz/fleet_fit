@@ -6,7 +6,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { GiTwoCoins } from "react-icons/gi";
 import { FaTruckFast, FaLocationDot, FaCheck, FaBoxOpen } from "react-icons/fa6";
-
+import TruckLoader from "@/components/loaders/loader"; 
 export default function TripDetailPage() {
   const { id } = useParams();
   const pathname = usePathname();
@@ -84,7 +84,7 @@ export default function TripDetailPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><span className="loading loading-spinner text-red-600"></span> Loading...</div>;
+  if (loading) return <TruckLoader/>;
   if (!trip) return <div className="p-8 text-center text-red-500 font-bold">Trip not found</div>;
 
   const isDelivered = trip.status === "delivered";

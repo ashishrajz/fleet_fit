@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Package, MapPin, Milestone } from "lucide-react";
+import TruckLoader from "@/components/loaders/loader";
 
 import { cities, getDistance } from "@/app/warehouse/shipments/new/database";
 
@@ -69,7 +70,7 @@ export default function DealerShipmentDetailPage() {
   };
 
   if (loading || !shipment) {
-    return <div className="p-8">Loading...</div>;
+    return <TruckLoader/>;
   }
 
   /* -------- Distance (DISPLAY ONLY) -------- */

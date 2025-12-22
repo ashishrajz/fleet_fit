@@ -42,7 +42,7 @@ const Page = () => {
       });
 
       const data = await res.json();
-      console.log("LOGIN RESPONSE:", data);
+     
 
       if (!res.ok) {
         toast.error(data.message || "Login failed");
@@ -75,6 +75,17 @@ const Page = () => {
 
   return (
     <div className="min-h-screen w-full bg-white grid lg:grid-cols-2">
+      {loading && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="bg-white rounded-2xl px-8 py-6 shadow-xl flex flex-col items-center gap-4">
+      <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-sm font-semibold text-zinc-700">
+        Signing you in…
+      </p>
+    </div>
+  </div>
+)}
+
       {/* LEFT */}
       <div className="flex flex-col justify-center px-8 sm:px-12 xl:px-24 py-12 relative">
 

@@ -16,7 +16,7 @@ export async function POST(req) {
 
     // ✅ BODY MUST BE READ HERE — NOWHERE ELSE
     const payload = await req.json();
-    console.log("BOOKING REQUEST PAYLOAD:", payload);
+    
 
     const {
       shipmentId,
@@ -71,7 +71,7 @@ export async function POST(req) {
       relatedId: booking._id,
     });
 
-    console.log("BOOKING SAVED → finalPrice:", booking.finalPrice);
+    
 
     return NextResponse.json(booking, { status: 201 });
   } catch (err) {

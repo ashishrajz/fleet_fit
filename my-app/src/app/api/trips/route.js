@@ -46,7 +46,7 @@ export async function GET() {
         .sort({ createdAt: -1 });
     }
 
-    console.log("📦 FOUND TRIPS COUNT:", trips.length);
+    
     return NextResponse.json(trips);
   } catch (err) {
     console.error("TRIPS API ERROR:", err);
