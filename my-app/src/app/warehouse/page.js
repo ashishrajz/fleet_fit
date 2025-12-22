@@ -8,8 +8,30 @@ import {
   Truck, 
   ArrowRight, 
   Box, 
-  Wind // Added Wind for the animation speed effect
+  Wind,TrendingUp, Star, Leaf // Added Wind for the animation speed effect
 } from "lucide-react";
+
+async function getStats() {
+  const headersList = await headers();
+  const cookieStore = await cookies();
+
+  const host = headersList.get("host");
+  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+
+  const res = await fetch(`${protocol}://${host}/api/warehouse/stats`, {
+    cache: "no-store",
+    headers: {
+      cookie: cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; "),
+    },
+  });
+
+  if (!res.ok) return null;
+  return res.json();
+}
+
 
 async function getShipments() {
   const headersList = await headers();
@@ -46,6 +68,7 @@ const getStatusStyles = (status) => {
 
 export default async function WarehouseDashboard() {
   const shipments = await getShipments();
+  const stats = await getStats();
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 md:p-10">
@@ -85,6 +108,47 @@ export default async function WarehouseDashboard() {
           Create Shipment
         </Link>
       </div>
+      {/* ================= STATS SECTION ================= */}
+{stats && (
+  <div className="max-w-7xl mx-auto mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+    
+    <div className="bg-white rounded-2xl p-6 border shadow-sm">
+      <div className="flex items-center gap-3 mb-3">
+        <TrendingUp className="text-blue-600" />
+        <h3 className="font-semibold text-slate-700">Trips Completed</h3>
+      </div>
+      <p className="text-3xl font-extrabold text-slate-900">
+        {stats.tripsCompleted}
+      </p>
+    </div>
+
+    <div className="bg-white rounded-2xl p-6 border shadow-sm">
+      <div className="flex items-center gap-3 mb-3">
+        <Star className="text-amber-500" />
+        <h3 className="font-semibold text-slate-700">Avg Rating</h3>
+      </div>
+      <p className="text-3xl font-extrabold text-slate-900">
+        {stats.avgRating ?? "—"}
+      </p>
+    </div>
+
+    <div className="bg-white rounded-2xl p-6 border shadow-sm">
+      <div className="flex items-center gap-3 mb-3">
+        <Leaf className="text-emerald-600" />
+        <h3 className="font-semibold text-slate-700">CO₂ Saved</h3>
+      </div>
+      <p className="text-3xl font-extrabold text-slate-900">
+        {stats.co2Saved} kg
+      </p>
+      <p className="text-xs text-slate-400 mt-1">
+        Compared to industry avg utilization
+      </p>
+    </div>
+
+  </div>
+)}
+{/* ================================================= */}
+
 
       <div className="max-w-7xl mx-auto">
         {shipments.length === 0 ? (

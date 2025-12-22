@@ -74,7 +74,8 @@ export default async function WarehouseProfilePage() {
   // DERIVED METRICS FOR MVP "WOW" FACTOR
   // Note: If backend doesn't calculate CO2 yet, we estimate it for the demo
   // Logic: 1 Trip = ~120kg CO2 saved compared to unoptimized loads
-  const estimatedCO2 = data.stats.completedTrips * 120; 
+  const estimatedCO2 = data.stats.co2Saved;
+ 
   const efficiencyRate = data.stats.totalShipments > 0 
     ? ((data.stats.completedTrips / data.stats.totalShipments) * 100).toFixed(0) 
     : 0;
@@ -86,7 +87,7 @@ export default async function WarehouseProfilePage() {
       <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Warehouse Dashboard</h1>
+            <h1 className="text-4xl font-bold text-slate-800 ml-6">Profile</h1>
            
           </div>
           
@@ -177,7 +178,8 @@ export default async function WarehouseProfilePage() {
               </div>
               <div className="h-[320px]">
                  {/* Passing data safely to your existing component */}
-                 <TripsLineChart data={data.charts.monthlyTrips} />
+                 <TripsLineChart data={data.charts.dailyTrips} />
+
               </div>
             </div>
           </div>

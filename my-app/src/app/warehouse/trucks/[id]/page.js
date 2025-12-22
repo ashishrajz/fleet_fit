@@ -5,6 +5,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { calculatePrice } from "@/lib/pricing";
+
+
+
+
+
 import {
   Truck,
   Box,
@@ -38,6 +44,14 @@ export default function TruckDetailPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [requestStatus, setRequestStatus] = useState("idle"); 
+  const [distance, setDistance] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [price, setPrice] = useState(0);
+  
+
+
+
+
 
   useEffect(() => {
     const id = params.id;
@@ -50,36 +64,82 @@ export default function TruckDetailPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  }, [params.id]);useEffect(() => {
+    const shipmentId = localStorage.getItem("activeShipment");
+    if (!shipmentId) return;
+  
+    const stored = localStorage.getItem(
+      `optimizedPrice:${shipmentId}:${params.id}`
+    );
+  
+    if (stored) {
+      setPrice(Number(stored));
+    }
   }, [params.id]);
+  
+
+  useEffect(() => {
+    const fetchShipmentDistance = async () => {
+      try {
+        const shipmentId = localStorage.getItem("activeShipment");
+        if (!shipmentId) return;
+  
+        const res = await fetch(`/api/shipments/${shipmentId}`);
+        if (!res.ok) return;
+  
+        const shipment = await res.json();
+        const d = Number(shipment.distance) || 0;
+  
+        setDistance(d);
+      } catch (err) {
+        console.error("Failed to fetch shipment distance", err);
+      }
+    };
+  
+    fetchShipmentDistance();
+  }, []);
 
   const sendRequest = async () => {
-    if (requestStatus === "loading" || requestStatus === "success") return;
-
-    setRequestStatus("loading");
     const shipmentId = localStorage.getItem("activeShipment");
-
-    try {
-      const res = await fetch("/api/bookings/requests", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shipmentId,
-          truckId: params.id,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Request failed");
-      }
-
-      toast.success("Request sent successfully!");
-      setRequestStatus("success");
-    } catch (error) {
-      toast.error("Request failed. Please try again.");
-      setRequestStatus("idle");
+    if (!shipmentId) {
+      toast.error("No active shipment selected");
+      return;
     }
+  
+    setRequestStatus("loading");
+  
+    const utilization = 0; // 🔒 HARD-LOCK (REQUIRED BY MODEL)
+  
+    const finalPrice = calculatePrice({
+      distance,
+      costPerKm: data.truck.costPerKm, // ✅ SAFE ACCESS
+      utilization,
+    });
+  
+    const res = await fetch("/api/bookings/requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shipmentId,
+        truckId: data.truck._id,
+        distance,
+        utilization,
+        finalPrice,
+      }),
+    });
+  
+    if (!res.ok) {
+      const err = await res.json();
+      console.error(err);
+      toast.error("Booking failed");
+      setRequestStatus("idle");
+      return;
+    }
+  
+    setRequestStatus("success");
   };
+  
+  
 
   if (loading || !data) {
     return (
@@ -90,6 +150,26 @@ export default function TruckDetailPage() {
   }
 
   const { truck, dealer, avgRating } = data;
+ 
+
+
+
+
+  
+  
+  
+  
+
+
+
+const costPerKm = Number(truck.costPerKm) || 0;
+const estimatedPrice = Math.round(distance * costPerKm);
+ 
+
+
+
+
+
   const truckImage = TRUCK_IMAGES[truck.truckType] || TRUCK_IMAGES.default;
 
   const containerVariants = {
@@ -226,22 +306,25 @@ export default function TruckDetailPage() {
               Estimated Cost
             </h3>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-bold text-slate-900">₹1,000</span>
+            <span className="text-4xl font-bold text-slate-900">
+            ₹ {price.toLocaleString()}
+
+
+</span>
+
               <span className="text-sm text-slate-400">/ trip</span>
             </div>
 
             <div className="my-6 space-y-3 border-t border-dashed border-slate-200 pt-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Base Fare</span>
-                <span className="font-medium">₹850</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Taxes & Fees</span>
-                <span className="font-medium">₹150</span>
-              </div>
+              
               <div className="flex justify-between pt-2 text-sm font-bold text-slate-900">
                 <span>Total</span>
-                <span>₹1,000</span>
+                <span>
+                ₹ {price.toLocaleString()}
+
+                
+</span>
+
               </div>
             </div>
 

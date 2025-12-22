@@ -16,6 +16,11 @@ const ShipmentSchema = new mongoose.Schema(
     destination: String,
     pickup: Date,
     deadline: Date,
+    distance: {
+      type: Number,
+      required: true,
+    },
+    
 
     status: {
       type: String,

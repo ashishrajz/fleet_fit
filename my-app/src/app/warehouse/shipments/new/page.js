@@ -128,6 +128,12 @@ export default function NewShipment() {
       });
 
       const data = await res.json();
+      // 🔥 SAVE DISTANCE FOR PRICING LATER
+localStorage.setItem(
+  "shipmentDistance",
+  payload.distance
+);
+
 
       if (!res.ok) throw new Error(data.error || "Failed to create shipment");
 
@@ -204,7 +210,7 @@ export default function NewShipment() {
                   label="Source City"
                   value={form.source}
                   onChange={(val) => handleCitySelect("source", val)}
-                  placeholder="Ex: New Delhi"
+                  placeholder="Ex: Delhi"
                 />
                 <AddressTextArea
                   label="Pickup Address"

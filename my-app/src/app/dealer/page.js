@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { FaTruckFast } from "react-icons/fa6";
 import { RiGeminiFill } from "react-icons/ri";
+import { Link } from "lucide-react";
 
 // --- API Logic ---
 async function getDealerStats() {
@@ -41,7 +42,8 @@ export default async function DealerDashboard() {
 
 
   const utilizationRate = 78; // % of fleet capacity used
-  const co2Saved = 1240; // kg
+  const co2Saved = stats.co2Saved;
+
   
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-10">
@@ -146,12 +148,16 @@ export default async function DealerDashboard() {
         <div className="space-y-6">
           
           {/* Highlight Action Card */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl">
+          <div className="relative isolate pointer-events-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl">
+
+
             <h3 className="text-lg font-bold mb-2">Driver Availability</h3>
-            <p className="text-slate-300 text-sm mb-6">4 drivers are currently idle and ready for assignment.</p>
-            <button className="w-full bg-white text-slate-900 py-2.5 rounded-lg font-semibold text-sm hover:bg-slate-100 transition">
-              Manage Drivers
-            </button>
+            <p className="text-slate-300 text-sm mb-6">{stats.availableTrucks} drivers are currently idle and ready for assignment.</p>
+            <button className="w-full bg-white text-slate-900 py-2.5 rounded-lg font-semibold text-sm hover:bg-slate-100 transition"> Manage Drivers </button>
+
+
+
+
           </div>
 
           {/* Quick Stats List */}

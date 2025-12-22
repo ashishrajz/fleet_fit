@@ -22,6 +22,19 @@ const BookingSchema = new mongoose.Schema(
       ref: "Truck",
       required: true,
     },
+
+    // 🔥 IMPORTANT (MISSING BEFORE)
+    utilization: {
+      type: Number, // percentage (0–100)
+      required: true,
+    },
+
+    // 🔥 SINGLE SOURCE OF TRUTH
+    finalPrice: {
+      type: Number,
+      required: true,
+    },
+
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

@@ -11,71 +11,64 @@ export async function GET(req, { params }) {
   /* ---------------- USER ---------------- */
   const user = await User.findById(id);
   if (!user) {
-    return NextResponse.json(
-      { error: "User not found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   /* ---------------- TRIPS ---------------- */
   const trips = await Trip.find({ warehouse: id });
 
-  const completedTrips = trips.filter(
-    (t) => t.status === "delivered"
+  const completedTrips = trips.filter(t => t.status === "delivered");
+  const totalShipments = trips.length;
+
+  /* ---------------- CO₂ (REAL) ---------------- */
+  const co2Saved = completedTrips.reduce(
+    (sum, t) => sum + (t.co2Saved || 0),
+    0
   );
-  const activeTrips = trips.filter(
-    (t) => t.status !== "delivered"
-  );
 
-  /* ---------------- MONTHLY CHART DATA ---------------- */
-  const monthlyMap = {};
+  /* ---------------- DAILY CHART (LAST 30 DAYS) ---------------- */
+  const dailyMap = {};
+  const today = new Date();
 
-  trips.forEach((trip) => {
-    const date = new Date(trip.createdAt);
-    const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    dailyMap[key] = 0;
+  }
 
-    if (!monthlyMap[key]) {
-      monthlyMap[key] = 0;
+  completedTrips.forEach(trip => {
+    const key = new Date(trip.createdAt).toISOString().slice(0, 10);
+    if (dailyMap[key] !== undefined) {
+      dailyMap[key]++;
     }
-    monthlyMap[key]++;
   });
 
-  const monthlyTrips = Object.entries(monthlyMap)
-    .map(([key, count]) => {
-      const [year, month] = key.split("-");
-      return {
-        month: `${month}/${year}`,
-        trips: count,
-      };
-    })
-    .sort((a, b) => {
-      const [m1, y1] = a.month.split("/");
-      const [m2, y2] = b.month.split("/");
-      return new Date(y1, m1 - 1) - new Date(y2, m2 - 1);
-    });
+  const dailyTrips = Object.entries(dailyMap)
+    .map(([date, count]) => ({ date, count }))
+    .reverse();
 
   /* ---------------- RATINGS ---------------- */
   const ratings = await Rating.find({ to: id })
     .populate("from", "name")
-    .sort({ createdAt: -1 })
-    .limit(5);
+    .sort({ createdAt: -1 });
 
   const avgRating =
     ratings.length === 0
       ? 0
-      : ratings.reduce((a, r) => a + r.score, 0) /
-        ratings.length;
+      : ratings.reduce((a, r) => a + r.score, 0) / ratings.length;
 
   /* ---------------- RESPONSE ---------------- */
   return NextResponse.json({
     user,
     stats: {
       completedTrips: completedTrips.length,
-      activeTrips: activeTrips.length,
+      totalShipments,
       avgRating,
+      co2Saved,
     },
     charts: {
-      monthlyTrips, // ✅ THIS FIXES YOUR CRASH
+      dailyTrips,
     },
     ratings,
   });

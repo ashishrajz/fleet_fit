@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { calculatePrice } from "@/lib/pricing";
+import { useRouter } from "next/navigation";
+
+
 import { 
   Truck, 
   Star, 
@@ -24,6 +28,9 @@ export default function OptimizePage() {
   const [results, setResults] = useState([]);
   const [requesting, setRequesting] = useState(null); 
   const [sentRequests, setSentRequests] = useState([]);
+
+  const router = useRouter();
+
 
   useEffect(() => {
     const runOptimization = async () => {
@@ -51,7 +58,7 @@ export default function OptimizePage() {
     runOptimization();
   }, [id]);
 
-  const sendRequest = async (truckId) => {
+  const sendRequest = async (truckId, r, price) => {
     setRequesting(truckId);
     try {
       const res = await fetch("/api/bookings/requests", {
@@ -61,10 +68,16 @@ export default function OptimizePage() {
         body: JSON.stringify({
           shipmentId: id,
           truckId,
+          distance: r.distance,
+          utilization: r.utilization,
+          finalPrice: price,
         }),
       });
   
-      if (!res.ok) throw new Error("Failed to send request");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to send request");
+      }
   
       toast.success("Booking request sent successfully");
       setSentRequests(prev => [...prev, truckId]);
@@ -74,6 +87,7 @@ export default function OptimizePage() {
       setRequesting(null);
     }
   };
+  
   
   // --- Loading State (Skeleton) ---
   if (loading) {
@@ -126,8 +140,25 @@ export default function OptimizePage() {
 
         {/* Results Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {results.map((r) => {
-            const isSent = sentRequests.includes(r.truck._id);
+        {results.map((r) => {
+  const isSent = sentRequests.includes(r.truck._id);
+
+  const price = calculatePrice({
+    distance: r.distance,
+    costPerKm: r.costPerKm,
+    utilization: r.utilization,
+  });
+
+  // 🔴 ADD THIS LINE — EXACTLY HERE
+  const handleTruckClick = () => {
+    localStorage.setItem(
+      `optimizedPrice:${id}:${r.truck._id}`,
+      String(price)
+    );
+  };
+
+            
+
             
             return (
               <div
@@ -137,10 +168,14 @@ export default function OptimizePage() {
                 
                 {/* --- CLICKABLE CARD AREA (Link) --- */}
                 <Link 
-                   href={`/warehouse/trucks/${r.truck._id}`}
-                   onClick={() => localStorage.setItem("activeShipment", id)}
-                   className="flex-1 cursor-pointer"
-                >
+  href={`/warehouse/trucks/${r.truck._id}`}
+  onClick={() => {
+    localStorage.setItem("activeShipment", id);
+    handleTruckClick(); // 🔴 ADD THIS
+  }}
+  className="flex-1 cursor-pointer"
+>
+
                     {/* Top Section: Header & "See More" Icon */}
                     <div className="p-6 pb-2">
                         <div className="flex justify-between items-start">
@@ -183,7 +218,9 @@ export default function OptimizePage() {
                                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Est. Cost</p>
                                 <div className="flex items-center gap-0.5 text-2xl font-bold text-gray-900">
                                     <IndianRupee className="w-5 h-5 text-gray-400 mt-1" />
-                                    {r.costEstimate.toLocaleString()}
+                                    {price.toLocaleString("en-IN")}
+
+
                                 </div>
                             </div>
 
@@ -195,8 +232,9 @@ export default function OptimizePage() {
                                         {r.rating} <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                                     </div>
                                     <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
-                                        24 trips
-                                    </span>
+  {r.ratingCount} trips
+</span>
+
                                 </div>
                             </div>
 
@@ -222,7 +260,8 @@ export default function OptimizePage() {
                     <button
                       onClick={(e) => {
                           e.stopPropagation(); // Prevent Link click when clicking button
-                          if(!isSent) sendRequest(r.truck._id);
+                          if (!isSent) sendRequest(r.truck._id, r, price);
+
                       }}
                       disabled={isSent || requesting === r.truck._id}
                       className={`w-full py-3.5 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 shadow-sm

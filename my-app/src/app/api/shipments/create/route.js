@@ -6,9 +6,7 @@ import Shipment from "@/lib/models/Shipment";
 
 export async function POST(req) {
   try {
-    
-    const cookieStore = await cookies();      
-
+    const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
     if (!token) {
@@ -20,9 +18,26 @@ export async function POST(req) {
 
     await connectDB();
 
+    const distance = Number(body.distance);
+
+    if (!Number.isFinite(distance)) {
+      return NextResponse.json(
+        { error: "Invalid distance value" },
+        { status: 400 }
+      );
+    }
+
     const shipment = await Shipment.create({
-      ...body,
+      source: body.source,
+      destination: body.destination,
+      weight: Number(body.weight),
+      volume: Number(body.volume),
+      boxes: Number(body.boxes),
+      deadline: body.deadline,
+
+      distance, // ✅ GUARANTEED number
       warehouse: decoded.userId,
+      status: "created",
     });
 
     return NextResponse.json(shipment, { status: 201 });

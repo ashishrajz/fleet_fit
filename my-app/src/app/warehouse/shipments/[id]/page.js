@@ -9,6 +9,9 @@ import {
   ArrowDown // 1. Imported ArrowDown
 } from "lucide-react";
 
+import ShipmentMap from "@/components/maps/ShipmentMap";
+
+
 // Adjust this import path based on where you saved cityDatabase.js
 import { cities, getDistance } from "../new/database"; 
 
@@ -192,10 +195,13 @@ export default async function ShipmentDetail({ params }) {
 
         {/* RIGHT: VISUAL */}
         <div className="bg-white rounded-xl shadow overflow-hidden h-fit">
-          <div className="h-48 bg-slate-50 flex flex-col items-center justify-center border-b border-slate-100">
-           <img src="https://developers.google.com/static/maps/images/landing/react-codelab-thumbnail.png"/>
-            <p className="text-sm font-medium text-slate-400">Map Visualization</p>
-          </div>
+        <div className="border-b border-slate-100">
+  <ShipmentMap
+    source={shipment.source}
+    destination={shipment.destination}
+  />
+</div>
+
 
           <div className="p-6">
             <h3 className="font-semibold mb-2 text-slate-900">Live Tracking</h3>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+
 import Booking from "@/lib/models/Booking";
 import Shipment from "@/lib/models/Shipment";
 import Truck from "@/lib/models/Truck";
@@ -13,7 +14,30 @@ export async function POST(req) {
     const token = cookieStore.get("token")?.value;
     const decoded = verifyToken(token);
 
-    const { shipmentId, truckId } = await req.json();
+    // ✅ BODY MUST BE READ HERE — NOWHERE ELSE
+    const payload = await req.json();
+    console.log("BOOKING REQUEST PAYLOAD:", payload);
+
+    const {
+      shipmentId,
+      truckId,
+      distance,
+      utilization,
+      finalPrice,
+    } = payload;
+
+    if (
+      !shipmentId ||
+      !truckId ||
+      typeof distance !== "number" ||
+      typeof utilization !== "number" ||
+      typeof finalPrice !== "number"
+    ) {
+      return NextResponse.json(
+        { error: "Invalid booking payload" },
+        { status: 400 }
+      );
+    }
 
     await connectDB();
 
@@ -22,7 +46,7 @@ export async function POST(req) {
 
     if (!shipment || !truck) {
       return NextResponse.json(
-        { error: "Invalid data" },
+        { error: "Invalid shipment or truck" },
         { status: 400 }
       );
     }
@@ -32,13 +56,14 @@ export async function POST(req) {
       warehouse: decoded.userId,
       dealer: truck.dealer._id,
       truck: truck._id,
+      distance,
+      utilization,
+      finalPrice,
     });
 
-    // Update shipment status
     shipment.status = "requested";
     await shipment.save();
 
-    // Notify dealer
     await Notification.create({
       user: truck.dealer._id,
       type: "booking_request",
@@ -46,9 +71,11 @@ export async function POST(req) {
       relatedId: booking._id,
     });
 
-    return NextResponse.json(booking);
+    console.log("BOOKING SAVED → finalPrice:", booking.finalPrice);
+
+    return NextResponse.json(booking, { status: 201 });
   } catch (err) {
-    console.error(err);
+    console.error("BOOKING REQUEST ERROR:", err);
     return NextResponse.json(
       { error: "Booking request failed" },
       { status: 500 }

@@ -8,15 +8,34 @@ import Trip from "@/lib/models/Trip";
 import Truck from "@/lib/models/Truck";
 import Notification from "@/lib/models/Notification";
 
-export async function POST(req, { params }) {
+export async function POST(req, context) {
   try {
-    const { id } = await params;
-    const { action } = await req.json();
+    const { id } = await context.params;
 
-    const cookieStore = await cookies();
-    const decoded = verifyToken(cookieStore.get("token")?.value);
+    // ✅ READ ACTION (JSON or FORM)
+    const contentType = req.headers.get("content-type") || "";
+    let action;
 
-    if (decoded.role.toLowerCase() !== "dealer") {
+    if (contentType.includes("application/json")) {
+      const body = await req.json();
+      action = body.action;
+    } else {
+      const formData = await req.formData();
+      action = formData.get("action");
+    }
+
+    if (!["approve", "reject"].includes(action)) {
+      return NextResponse.json(
+        { error: "Invalid action" },
+        { status: 400 }
+      );
+    }
+
+    const cookieStore = await cookies(); // ✅ FIX (THIS WAS THE BUG)
+    const token = cookieStore.get("token")?.value;
+    const decoded = verifyToken(token);
+
+    if (decoded.role !== "dealer") {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 403 }
@@ -35,40 +54,42 @@ export async function POST(req, { params }) {
 
     // ---------------- APPROVE ----------------
     if (action === "approve") {
-      // 🔑 CREATE TRIP AND STORE IT
       const trip = await Trip.create({
         shipment: booking.shipment,
         booking: booking._id,
         dealer: booking.dealer,
-        warehouse: booking.warehouse, // ✅ FIXED
+        warehouse: booking.warehouse,
         truck: booking.truck,
         status: "assigned",
       });
 
-      // mark truck unavailable
       await Truck.findByIdAndUpdate(booking.truck, {
         isAvailable: false,
       });
 
-      // update booking
-      booking.status = "approved";
-      await booking.save();
+      // ✅ NO .save() — atomic update
+      await Booking.findByIdAndUpdate(
+        booking._id,
+        { status: "approved" }
+      );
 
-      // 🔔 NOTIFY WAREHOUSE
       await Notification.create({
         user: booking.warehouse,
         type: "booking_approved",
         message: "Your shipment has been approved",
-        relatedId: trip._id, // ✅ NOW DEFINED
+        relatedId: trip._id,
       });
 
-      return NextResponse.json(trip);
+      return NextResponse.json({ success: true });
     }
 
     // ---------------- REJECT ----------------
     if (action === "reject") {
-      booking.status = "rejected";
-      await booking.save();
+      // ✅ NO .save() — atomic update
+      await Booking.findByIdAndUpdate(
+        booking._id,
+        { status: "rejected" }
+      );
 
       await Notification.create({
         user: booking.warehouse,
@@ -80,10 +101,6 @@ export async function POST(req, { params }) {
       return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json(
-      { error: "Invalid action" },
-      { status: 400 }
-    );
   } catch (err) {
     console.error("BOOKING ACTION ERROR:", err);
     return NextResponse.json(
