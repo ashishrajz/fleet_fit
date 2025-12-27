@@ -69,7 +69,7 @@ export default function TripDetailPage() {
       toast.success(`Trip marked as ${newStatus.replace("_", " ")}`);
       await fetchTrip(); 
     } catch (error) {
-      toast.error("Failed to update status");
+      console.log(error)
     } finally {
       setUpdating(false);
     }
